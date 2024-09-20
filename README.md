@@ -1,4 +1,4 @@
-# Python Code Visualization Tool: Revolutionize Your Code Understanding
+# CodeScope : Python Code Visualization Tool: Revolutionize Your Code Understanding
 
 ![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -15,20 +15,60 @@ Elevate your Python development experience with our cutting-edge Code Visualizat
 - **Advanced Data Flow Analysis**: Gain insights into variable usage and function interactions
 - **Zoom and Pan Capabilities**: Easily explore large, complex codebases
 - **Search Functionality**: Quickly locate specific code elements within your project
+- **AI-Assisted Code Understanding**: Get improvement suggestions and code summaries
+- **Basic Collaboration Features**: Synchronize code changes across multiple users
 
 ## 🛠️ Installation
 
 ```bash
-git clone https://github.com/yourusername/python-code-visualization-tool.git
-cd python-code-visualization-tool
+git clone https://github.com/hemangjoshi37a/CodeScope.git
+cd CodeScope
 pip install -r requirements.txt
 ```
 
-## 🖥️ Usage
+## 🖥️ Getting Started
 
-```bash
-python main.py /path/to/your/project
-```
+1. Launch the application:
+   ```bash
+   python app.py
+   ```
+
+2. The application will open with a sample code loaded. You can start exploring the visualization immediately.
+
+3. To load your own Python file or project:
+   - Use File > Open in the application menu
+   - Or drag and drop a Python file into the application window
+
+## 📊 Usage
+
+### Basic Navigation
+
+- **Zoom**: Use the mouse wheel or trackpad gestures
+- **Pan**: Click and drag on the visualization area
+- **Select Nodes**: Click on a node to see details
+- **Edit Code**: Use the integrated code editor on the right side
+
+### Visualization Features
+
+- **Node Types**: 
+  - Blue rectangles represent classes
+  - Pink circles represent methods
+  - Green circles represent variables
+
+- **Connections**: 
+  - Solid lines show function calls or class relationships
+  - Dashed lines represent data flow
+
+### Real-time Editing
+
+1. Make changes in the code editor
+2. The visualization updates automatically
+3. AI suggestions appear below the code editor
+
+### Collaboration
+
+1. Multiple instances of the application can connect to the same codebase
+2. Changes made by one user are reflected in real-time for others
 
 ## 🧰 Technologies Used
 
@@ -37,6 +77,43 @@ python main.py /path/to/your/project
 - pyqtgraph
 - networkx
 - AST (Abstract Syntax Tree)
+
+## 🔍 Features in Detail
+
+### Abstract Syntax Tree (AST) Parsing
+
+Our tool uses Python's `ast` module to parse your code into an Abstract Syntax Tree. This allows for detailed analysis of code structure, including:
+
+- Function and class definitions
+- Variable assignments and usage
+- Control flow structures
+
+### Data Flow Analysis
+
+The Data Flow Analyzer tracks how variables are used throughout your code:
+
+- Identifies variable assignments and references
+- Visualizes data movement between functions and classes
+- Helps identify potential issues like unused variables or unintended side effects
+
+### AI-Assisted Code Understanding
+
+Our basic AI assistant provides:
+
+- Suggestions for code improvements
+- Identification of potential code smells
+- Simple refactoring recommendations
+
+To use: Simply edit your code, and AI suggestions will appear automatically.
+
+## 🛠️ Troubleshooting
+
+- **Visualization not updating**: Try closing and reopening the file
+- **Performance issues with large files**: Consider breaking your code into smaller modules
+- **Collaboration features not working**: Ensure all users are on the same network and using the same version of the tool
+
+
+
 
 
 ## 🗺️ Roadmap
@@ -99,9 +176,28 @@ We invite the community to join us on this exciting journey. Your feedback, cont
 
 
 
+
+
+
+
+
+
+
+
+
+
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+We welcome contributions to CodeScope! Here's how you can help:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/AmazingFeature`)
+3. Make your changes
+4. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+5. Push to the branch (`git push origin feature/AmazingFeature`)
+6. Open a Pull Request
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📄 License
 
@@ -109,7 +205,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🌟 Support the Project
 
-If you find this tool useful, please consider starring the repository and sharing it with your network!
+If you find CodeScope useful, please consider:
+- Starring the repository
+- Sharing it with your network
+- Contributing to its development
 
 ## 📫 Contact the Developer
 
@@ -127,9 +226,26 @@ If you find this tool useful, please consider starring the repository and sharin
 [<img height="36" src="https://cdn.simpleicons.org/Blogger"/>](http://hemangjoshi.blogspot.com) &nbsp;
 [<img height="36" src="https://cdn.simpleicons.org/gitlab"/>](https://gitlab.com/hemangjoshi37a) &nbsp;
 
+## ❓ Frequently Asked Questions
+
+1. **Q: Can CodeScope handle very large Python projects?**
+   A: While CodeScope can visualize large projects, performance may be affected. We recommend starting with individual files or smaller modules and gradually exploring larger codebases.
+
+2. **Q: Is my code secure when using the collaboration features?**
+   A: CodeScope does not store or transmit your code to external servers. Collaboration happens directly between instances on the same network. However, always be cautious when sharing sensitive code.
+
+3. **Q: How accurate is the AI-assisted code understanding?**
+   A: The current AI assistant provides basic suggestions. While helpful, it's not a substitute for human code review. We're continuously working to improve its accuracy and capabilities.
+
+4. **Q: Can I use CodeScope with languages other than Python?**
+   A: Currently, CodeScope is designed specifically for Python. Support for other languages is on our roadmap for future development.
+
+5. **Q: How often is CodeScope updated?**
+   A: We strive for regular updates to improve features and fix bugs. Check our GitHub repository for the latest releases and updates.
+
 ## 💡 Elevate Your Python Development
 
-Transform the way you understand and interact with Python code. Our visualization tool is perfect for:
+Transform the way you understand and interact with Python code. CodeScope is perfect for:
 
 - **Code Reviews**: Quickly grasp complex structures and relationships
 - **Refactoring**: Identify areas for improvement with ease
@@ -137,7 +253,7 @@ Transform the way you understand and interact with Python code. Our visualizatio
 - **Education**: Teach Python concepts with interactive visual aids
 - **Debugging**: Trace issues through visual representation of code flow
 
-Don't let complex codebases slow you down. Visualize, understand, and conquer your Python projects with our innovative tool.
+Don't let complex codebases slow you down. Visualize, understand, and conquer your Python projects with CodeScope.
 
 ---
 
