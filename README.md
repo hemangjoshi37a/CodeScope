@@ -1,5 +1,8 @@
 # CodeScope : Python Code Visualization Tool: Revolutionize Your Code Understanding
 
+![image](https://github.com/user-attachments/assets/4d81b686-1bff-49e5-b49a-469110321a16)
+
+
 ![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
