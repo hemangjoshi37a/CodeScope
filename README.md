@@ -46,9 +46,11 @@ pip install PyQt6 pyqtgraph networkx
 
 ## 🖥️ Getting Started
 
+### Quick Start
+
 1. Launch the application:
    ```bash
-   python app.py
+   python main.py
    ```
 
 2. The application opens with a sample code snippet demonstrating:
@@ -57,6 +59,25 @@ pip install PyQt6 pyqtgraph networkx
    - Variable assignments and usage
 
 3. Start exploring the visualization immediately or paste your own Python code in the editor.
+
+### Advanced Usage
+
+Launch with a specific file:
+```bash
+python main.py --file your_script.py
+```
+
+Enable debug logging:
+```bash
+python main.py --debug
+```
+
+View all options:
+```bash
+python main.py --help
+```
+
+**Note:** You can also run `python app.py` directly for backward compatibility.
 
 ## 📊 Usage
 
@@ -319,12 +340,17 @@ CodeScope is perfect for:
 
 ```
 CodeScope/
-├── app.py                           # Main application file
-├── unknown_project_handler.py      # Unknown project structure handler (NEW!)
-├── test_unknown_project_handler.py # Comprehensive test suite (NEW!)
+├── main.py                         # Main entry point (NEW!)
+├── app.py                           # Core application file
+├── unknown_project_handler.py      # Unknown project structure handler
+├── test_main.py                    # Test suite for main entry point (NEW!)
+├── test_unknown_project_handler.py # Test suite for project handler
+├── demo_main.py                    # Demo script for main.py usage (NEW!)
+├── demo_unknown_project.py         # Demo for unknown project handler
 ├── CodeScope.ipynb                 # Jupyter notebook experiments
 ├── minimal_example.py              # Simplified example
-├── UNKNOWN_PROJECT_HANDLER.md      # Feature documentation (NEW!)
+├── requirements.txt                # Project dependencies
+├── UNKNOWN_PROJECT_HANDLER.md      # Feature documentation
 ├── LICENSE                         # MIT License
 └── README.md                       # This file
 ```

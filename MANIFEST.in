@@ -1,0 +1,40 @@
+# Include documentation and metadata files
+include README.md
+include LICENSE
+include requirements.txt
+include FEATURE_SUMMARY.md
+include UNKNOWN_PROJECT_HANDLER.md
+
+# Include configuration files
+include pyproject.toml
+include setup.py
+include package.json
+
+# Include example files
+include minimal_example.py
+include demo_unknown_project.py
+
+# Exclude development and cache files
+exclude .gitignore
+exclude .claude-prompt.txt
+recursive-exclude __pycache__ *
+recursive-exclude .ipynb_checkpoints *
+recursive-exclude .vscode *
+recursive-exclude .virtual_documents *
+recursive-exclude logs *
+recursive-exclude build *
+recursive-exclude dist *
+recursive-exclude *.egg-info *
+
+# Exclude test files from distribution (optional - uncomment if you want to exclude tests)
+# recursive-exclude tests *
+# exclude test_*.py
+
+# Exclude notebook files
+exclude *.ipynb
+exclude *.html
+recursive-exclude create_python_visualization_library_files *
+
+# Include any data files if needed in the future
+# recursive-include data *
+# recursive-include assets *

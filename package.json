@@ -1,0 +1,61 @@
+{
+  "name": "codescope",
+  "version": "1.0.0",
+  "description": "Transform complex Python codebases into intuitive, interactive visual representations",
+  "main": "app.py",
+  "scripts": {
+    "start": "python app.py",
+    "demo": "python demo_unknown_project.py",
+    "test": "pytest tests/ -v --cov=. --cov-report=html --cov-report=term",
+    "test:unit": "pytest tests/ -v -m unit",
+    "test:watch": "pytest-watch tests/",
+    "lint": "flake8 *.py",
+    "format": "black *.py",
+    "format:check": "black --check *.py",
+    "typecheck": "mypy *.py --ignore-missing-imports",
+    "clean": "rm -rf build/ dist/ *.egg-info __pycache__/ .pytest_cache/ .coverage htmlcov/ logs/*.log",
+    "build": "python setup.py sdist bdist_wheel",
+    "install": "pip install -e .",
+    "install:dev": "pip install -e .[dev]",
+    "docs": "echo 'Documentation available in README.md'",
+    "version": "echo 'CodeScope version 1.0.0'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hemangjoshi37a/CodeScope.git"
+  },
+  "keywords": [
+    "visualization",
+    "code-analysis",
+    "ast",
+    "python",
+    "pyqt6",
+    "graph",
+    "networkx",
+    "development-tools",
+    "code-visualization",
+    "static-analysis"
+  ],
+  "author": {
+    "name": "Hemang Joshi",
+    "email": "hemangjoshi37a@gmail.com",
+    "url": "https://hjlabs.in/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hemangjoshi37a/CodeScope/issues"
+  },
+  "homepage": "https://github.com/hemangjoshi37a/CodeScope#readme",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=12.0.0",
+    "npm": ">=6.0.0",
+    "python": ">=3.7"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ]
+}
