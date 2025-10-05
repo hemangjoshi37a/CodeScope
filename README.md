@@ -79,6 +79,355 @@ python main.py --help
 
 **Note:** You can also run `python app.py` directly for backward compatibility.
 
+## 💡 Usage Examples
+
+### Example 1: Visualizing a Simple Python Script
+
+Create a file `hello.py` with the following content:
+
+```python
+def greet(name):
+    return f"Hello, {name}!"
+
+def main():
+    user = "World"
+    message = greet(user)
+    print(message)
+
+if __name__ == "__main__":
+    main()
+```
+
+Visualize it with CodeScope:
+
+```bash
+python main.py --file hello.py
+```
+
+**What you'll see:**
+- Module node (hello.py) in blue
+- Two function nodes (greet, main) in red
+- Variable nodes (user, message) in yellow-orange
+- Connections showing the call relationships
+
+---
+
+### Example 2: Analyzing a Class-Based Project
+
+Create `calculator.py`:
+
+```python
+class Calculator:
+    def __init__(self):
+        self.history = []
+
+    def add(self, a, b):
+        result = a + b
+        self.history.append(f"{a} + {b} = {result}")
+        return result
+
+    def subtract(self, a, b):
+        result = a - b
+        self.history.append(f"{a} - {b} = {result}")
+        return result
+
+    def get_history(self):
+        return self.history
+
+calc = Calculator()
+print(calc.add(5, 3))
+print(calc.subtract(10, 4))
+```
+
+Run CodeScope:
+
+```bash
+python main.py --file calculator.py --debug
+```
+
+**What you'll see:**
+- Module node (calculator.py)
+- Class node (Calculator) in green
+- Method nodes (__init__, add, subtract, get_history) in red
+- Variable node (calc) in yellow-orange
+- Log output showing "Project type detected: library"
+
+**Try the level filter:**
+- Type `class` in the level selector and press Enter → See only the Calculator class
+- Type `function` and press Enter → See only the methods
+- Clear and press Enter → See everything again
+
+---
+
+### Example 3: Visualizing a Web Application
+
+Create `app_flask.py`:
+
+```python
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/api/data', methods=['GET', 'POST'])
+def api_data():
+    if request.method == 'POST':
+        data = request.get_json()
+        return {"status": "success", "data": data}
+    return {"status": "ready"}
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+Visualize it:
+
+```bash
+python main.py --file app_flask.py
+```
+
+**What you'll see:**
+- Import nodes (flask, render_template, request) in purple
+- Module node (app_flask.py)
+- Function nodes (home, api_data) in red with decorators
+- Log output: "Project type detected: web_application"
+
+---
+
+### Example 4: Working with Real-Time Code Editing
+
+1. Launch CodeScope without a file:
+   ```bash
+   python main.py
+   ```
+
+2. Paste this code in the editor:
+
+```python
+class DataProcessor:
+    def process(self, data):
+        cleaned = self.clean(data)
+        return self.transform(cleaned)
+
+    def clean(self, data):
+        return [x for x in data if x is not None]
+
+    def transform(self, data):
+        return [x * 2 for x in data]
+
+processor = DataProcessor()
+result = processor.process([1, None, 3, 4])
+```
+
+3. Watch the visualization update in real-time as you type
+4. Try modifying the code:
+   - Add a new method → See it appear instantly
+   - Remove a method → Watch it disappear
+   - Introduce a syntax error → See a red error node appear
+
+---
+
+### Example 5: Analyzing Data Analysis Scripts
+
+Create `data_analysis.py`:
+
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+def load_data(filepath):
+    """Load CSV data into DataFrame"""
+    return pd.read_csv(filepath)
+
+def analyze_data(df):
+    """Perform statistical analysis"""
+    summary = {
+        'mean': df.mean(),
+        'std': df.std(),
+        'count': len(df)
+    }
+    return summary
+
+def visualize(df, column):
+    """Create visualization"""
+    plt.figure(figsize=(10, 6))
+    plt.hist(df[column], bins=30)
+    plt.title(f'Distribution of {column}')
+    plt.show()
+
+# Main execution
+data = load_data('data.csv')
+stats = analyze_data(data)
+visualize(data, 'value')
+```
+
+Run with debug logging:
+
+```bash
+python main.py --file data_analysis.py --debug
+```
+
+**What you'll see:**
+- Import nodes for pandas, numpy, matplotlib in purple
+- Three function nodes (load_data, analyze_data, visualize)
+- Variable nodes (data, stats)
+- Console output: "Project type detected: data_analysis"
+
+---
+
+### Example 6: Handling Syntax Errors Gracefully
+
+Create `broken_code.py` with intentional syntax errors:
+
+```python
+class BrokenClass:
+    def method1(self):
+        print("This works")
+
+    def method2(self
+        # Syntax error: missing closing parenthesis
+        print("This is broken")
+
+def working_function():
+    return "I still work!"
+```
+
+Visualize it:
+
+```bash
+python main.py --file broken_code.py
+```
+
+**What you'll see:**
+- CodeScope's Unknown Project Handler kicks in
+- Partial analysis shows what could be parsed
+- Bright red error node showing the syntax error
+- working_function still appears in the visualization
+- Error message displayed in the red label below the editor
+
+---
+
+### Example 7: Using the Search Feature (Interactive)
+
+1. Load a complex file:
+   ```bash
+   python main.py --file app.py
+   ```
+
+2. In the search bar (bottom of the interface):
+   - Type a function name to locate it (placeholder feature)
+   - Future versions will highlight matching nodes
+
+3. Use level filtering instead:
+   - Type `import` to see all dependencies
+   - Type `error` to see all error nodes
+   - Type `class` to focus on class structure
+
+---
+
+### Example 8: Visualizing the CodeScope Project Itself
+
+Visualize CodeScope's own code:
+
+```bash
+# Visualize the main entry point
+python main.py --file main.py
+
+# Visualize the core application
+python main.py --file app.py
+
+# Visualize the unknown project handler
+python main.py --file unknown_project_handler.py
+```
+
+**Try this:**
+1. Open `unknown_project_handler.py`
+2. Use level filter → type `class` → See UnknownProjectHandler and ProjectType
+3. Type `function` → See all the methods like analyze(), _extract_structure(), etc.
+4. Clear filter → See the complete structure with imports, classes, and functions
+
+---
+
+### Example 9: Programmatic Usage (Python API)
+
+You can also use CodeScope's analysis capabilities programmatically:
+
+```python
+from unknown_project_handler import UnknownProjectHandler, analyze_unknown_project
+
+# Method 1: Using the convenience function
+code = """
+class MyClass:
+    def my_method(self):
+        pass
+"""
+
+result = analyze_unknown_project(code, "my_file.py")
+print(f"Project type: {result['project_type']}")
+print(f"Classes found: {len(result['structure_info']['classes'])}")
+print(f"Functions found: {len(result['structure_info']['functions'])}")
+
+# Method 2: Using the handler directly
+handler = UnknownProjectHandler(code, "my_file.py")
+analysis = handler.analyze()
+
+# Get visualization data
+nodes = analysis['nodes']
+edges = analysis['edges']
+levels = analysis['levels']
+
+# Get project info
+info = handler.get_project_info()
+print(f"Project type: {info['project_type']}")
+print(f"Number of classes: {info['num_classes']}")
+print(f"Number of functions: {info['num_functions']}")
+print(f"Has errors: {info['has_errors']}")
+```
+
+---
+
+### Example 10: Command-Line Options
+
+```bash
+# Basic usage - opens with default sample code
+python main.py
+
+# Load specific file
+python main.py --file myproject.py
+
+# Enable debug logging for troubleshooting
+python main.py --debug
+
+# Load file with debug logging
+python main.py --file myproject.py --debug
+
+# Show version information
+python main.py --version
+
+# Show help and all options
+python main.py --help
+
+# Backward compatibility - still works!
+python app.py
+```
+
+---
+
+### Tips for Best Results
+
+1. **For large files**: Use level filtering to focus on specific node types
+2. **For cluttered visualizations**: Try filtering by `class` or `function` only
+3. **For real-time editing**: Paste code directly in the editor for instant feedback
+4. **For project analysis**: Load your main entry point file (main.py, app.py, etc.)
+5. **For debugging**: Always use `--debug` flag when troubleshooting issues
+6. **For performance**: Limit visualizations to 50-100 nodes for best performance
+
+---
+
 ## 📊 Usage
 
 ### Basic Navigation

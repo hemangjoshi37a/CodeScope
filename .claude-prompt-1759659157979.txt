@@ -1,0 +1,10 @@
+Task: Set up CI/CD pipeline
+
+Type: feature
+Priority: medium
+
+Please implement this feature with:
+- Clean, maintainable code
+- Appropriate error handling
+- Basic tests
+- Comments for complex logic
