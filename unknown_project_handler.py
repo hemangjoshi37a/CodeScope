@@ -134,11 +134,11 @@ class UnknownProjectHandler:
                         'name': node.name,
                         'bases': [self._get_name(base) for base in node.bases],
                         'decorators': [self._get_name(dec) for dec in node.decorator_list],
-                        'methods': [m.name for m in node.body if isinstance(m, ast.FunctionDef)],
+                        'methods': [m.name for m in node.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))],
                         'lineno': node.lineno
                     })
 
-                elif isinstance(node, ast.FunctionDef):
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     # Check if it's a top-level function (not a method)
                     parent = self._find_parent_class(node)
                     if not parent:

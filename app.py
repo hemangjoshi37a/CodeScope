@@ -8,6 +8,7 @@ from PyQt6.QtGui import QColor
 import pyqtgraph as pg
 import networkx as nx
 import ast
+from unknown_project_handler import UnknownProjectHandler, ProjectType
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -37,11 +38,27 @@ class CodeParser:
     def __init__(self, code):
         self.code = code
         self.tree = None
+        self.use_unknown_handler = True  # Enable unknown project handling
 
 
 
     def analyze(self):
+        """
+        Analyze code using both standard parser and unknown project handler.
+        Falls back to UnknownProjectHandler for better error handling and analysis.
+        """
         try:
+            # First attempt: Use UnknownProjectHandler for comprehensive analysis
+            if self.use_unknown_handler:
+                handler = UnknownProjectHandler(self.code)
+                result = handler.analyze()
+
+                if result['success'] or result['nodes']:
+                    # Return the enhanced analysis results
+                    logger.info(f"Project type detected: {result['project_type'].value}")
+                    return result['nodes'], result['edges'], result['levels']
+
+            # Fallback: Use original simple parser
             self.tree = ast.parse(self.code)
             nodes = []
             edges = []
@@ -59,6 +76,11 @@ class CodeParser:
             return nodes, edges, levels
         except SyntaxError as e:
             logger.error(f"Syntax error in code: {e}")
+            # Use UnknownProjectHandler for partial analysis even with errors
+            if self.use_unknown_handler:
+                handler = UnknownProjectHandler(self.code)
+                result = handler.analyze()
+                return result['nodes'], result['edges'], result['levels']
             return [("SyntaxError", str(e))], [], {'module': [], 'class': [], 'function': []}
 
     def process_node(self, node):
@@ -210,11 +232,14 @@ class CodeVisualizer(pg.GraphicsLayoutWidget):
 
 
     def get_node_color(self, node_type):
+        """Get color for each node type"""
         color_map = {
-            'module': (100, 100, 255, 255),
-            'class': (100, 255, 100, 255),
-            'function': (255, 100, 100, 255),
-            'variable': (255, 200, 0, 255)
+            'module': (100, 100, 255, 255),      # Blue
+            'class': (100, 255, 100, 255),       # Green
+            'function': (255, 100, 100, 255),    # Red
+            'variable': (255, 200, 0, 255),      # Orange
+            'import': (200, 100, 255, 255),      # Purple
+            'error': (255, 50, 50, 255)          # Bright Red
         }
         return color_map.get(node_type, (200, 200, 200, 255))
 

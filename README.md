@@ -10,9 +10,12 @@ Transform complex Python codebases into intuitive, interactive visual representa
 
 - **Dynamic Graph Visualization**: Powered by PyQt6 and pyqtgraph for smooth, responsive displays
 - **Intelligent Code Parsing**: Utilizes Abstract Syntax Tree (AST) for accurate code analysis
-- **Multi-level Visualization**: Navigate between module, class, and function views
+- **Unknown Project Structure Handler**: Automatically detects and visualizes projects of any type (NEW!)
+- **Project Type Detection**: Identifies web apps, CLI tools, data analysis, libraries, and scripts
+- **Robust Error Handling**: Gracefully handles syntax errors with partial analysis fallback
+- **Multi-level Visualization**: Navigate between module, class, function, import, and error views
 - **Interactive Code Editing**: Real-time code modifications with instant visual updates
-- **Node-Based Representation**: Color-coded nodes for classes, functions, and variables
+- **Enhanced Node Types**: Import nodes (purple) and error nodes (bright red) for better insights
 - **Zoom and Pan Capabilities**: Explore large, complex codebases with ease
 - **Search Functionality**: Quickly locate specific code elements (search bar included)
 - **Asynchronous Parsing**: Non-blocking code analysis using Qt threading
@@ -71,9 +74,13 @@ pip install PyQt6 pyqtgraph networkx
   - **Green** (100, 255, 100): Classes
   - **Red** (255, 100, 100): Functions
   - **Yellow-Orange** (255, 200, 0): Variables
+  - **Purple** (200, 100, 255): Imports (NEW!)
+  - **Bright Red** (255, 50, 50): Errors (NEW!)
 
 - **Node Connections**:
   - Lines show relationships between classes, functions, and their containing scopes
+  - Import nodes connect to the module to show dependencies
+  - Error nodes highlight problematic code sections
 
 ### Real-time Editing
 
@@ -84,9 +91,20 @@ pip install PyQt6 pyqtgraph networkx
 
 ### Level Filtering
 
-1. Enter a level type in the level selector: `module`, `class`, or `function`
+1. Enter a level type in the level selector: `module`, `class`, `function`, `import`, or `error`
 2. Press Enter to filter the visualization to show only nodes of that type
 3. Clear the field and press Enter to show all nodes again
+
+### Project Type Detection
+
+CodeScope automatically detects your project type and logs it:
+- **Web Application**: Flask, Django, FastAPI, etc.
+- **CLI Tool**: argparse, click, typer
+- **Data Analysis**: pandas, numpy, matplotlib
+- **Library**: Reusable code with classes
+- **Script**: Simple scripts with main execution
+
+Check the console output for: `INFO:app:Project type detected: <type>`
 
 ### Search Feature
 
@@ -270,7 +288,10 @@ A: Export functionality is planned for future releases. Currently, you can take 
 A: No, CodeScope only reads and analyzes your code. Changes in the editor don't save to disk automatically.
 
 **Q: What Python syntax is supported?**
-A: CodeScope supports standard Python syntax parsed by the `ast` module (Python 3.7+). Complex expressions and decorators are recognized but may not be visualized in detail.
+A: CodeScope supports standard Python syntax parsed by the `ast` module (Python 3.7+). Even code with syntax errors is analyzed using the Unknown Project Handler for partial visualization.
+
+**Q: What happens if my code has syntax errors?**
+A: CodeScope gracefully handles syntax errors! The Unknown Project Handler performs partial analysis and displays error nodes (bright red) in the visualization to highlight issues.
 
 **Q: Can I use CodeScope with other languages?**
 A: Currently, CodeScope is Python-only. The AST parser is Python-specific, but the visualization framework could be adapted for other languages.
@@ -298,20 +319,25 @@ CodeScope is perfect for:
 
 ```
 CodeScope/
-├── app.py                  # Main application file
-├── CodeScope.ipynb        # Jupyter notebook experiments
-├── minimal_example.py     # Simplified example
-├── LICENSE                # MIT License
-└── README.md             # This file
+├── app.py                           # Main application file
+├── unknown_project_handler.py      # Unknown project structure handler (NEW!)
+├── test_unknown_project_handler.py # Comprehensive test suite (NEW!)
+├── CodeScope.ipynb                 # Jupyter notebook experiments
+├── minimal_example.py              # Simplified example
+├── UNKNOWN_PROJECT_HANDLER.md      # Feature documentation (NEW!)
+├── LICENSE                         # MIT License
+└── README.md                       # This file
 ```
 
 ### Key Classes
 
 - **CodeVisualizationTool** (app.py:258-369): Main QMainWindow application
 - **CodeVisualizer** (app.py:150-256): Custom pyqtgraph widget for graph rendering
-- **CodeParser** (app.py:36-90): AST-based code analyzer
+- **CodeParser** (app.py:37-110): Enhanced AST-based code analyzer with unknown project support
 - **CodeParserWorker** (app.py:18-34): Threaded parser wrapper
 - **CodeNode** (app.py:92-146): Custom GraphItem for node rendering
+- **UnknownProjectHandler** (unknown_project_handler.py): Handles unknown project structures (NEW!)
+- **ProjectType** (unknown_project_handler.py): Enum for project type classification (NEW!)
 
 ### Logging
 
