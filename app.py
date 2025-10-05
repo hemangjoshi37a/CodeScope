@@ -1,211 +1,378 @@
+
 import sys
-import ast
-import networkx as nx
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QSplitter, QTextEdit
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtGui import QPainter, QPen, QColor
+import traceback
+import logging
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QSplitter, QTextEdit, QLabel, QLineEdit, QPlainTextEdit
+from PyQt6.QtCore import Qt, QObject, QThread, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QColor
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
-import numpy as np
-from difflib import SequenceMatcher
-import threading
+import networkx as nx
+import ast
 
-class CodeNode(pg.GraphicsObject):
-    def __init__(self, name, node_type, content=""):
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
+
+
+class CodeParserWorker(QObject):
+    finished = pyqtSignal(object, object, object)
+    error = pyqtSignal(str)
+    log = pyqtSignal(str)
+
+    def __init__(self, code):
         super().__init__()
-        self.name = name
-        self.node_type = node_type
-        self.content = content
-        self.connections = []
-        self.rect = QRectF(0, 0, 150, 100)
-        self.picture = QtGui.QPicture()
-        self._generate_picture()
+        self.code = code
 
-    def _generate_picture(self):
-        painter = QPainter(self.picture)
-        painter.setPen(pg.mkPen(color=(50, 50, 50)))
-        painter.setBrush(pg.mkBrush(color=(200, 200, 255)))
-        painter.drawRect(self.rect)
-        painter.setPen(pg.mkPen(color=(0, 0, 0)))
-        painter.drawText(self.rect, Qt.AlignCenter, f"{self.node_type}\n{self.name}")
-        painter.end()
+    def run(self):
+        try:
+            parser = CodeParser(self.code)
+            nodes, edges, levels = parser.analyze()
+            self.finished.emit(nodes, edges, levels)
+        except Exception as e:
+            self.error.emit(str(e))
+            self.log.emit(traceback.format_exc())
 
-    def paint(self, painter, option, widget=None):
-        painter.drawPicture(0, 0, self.picture)
+class CodeParser:
+    def __init__(self, code):
+        self.code = code
+        self.tree = None
+
+
+
+    def analyze(self):
+        try:
+            self.tree = ast.parse(self.code)
+            nodes = []
+            edges = []
+            levels = {'module': [], 'class': [], 'function': []}
+
+            for node in ast.walk(self.tree):
+                node_info = self.process_node(node)
+                if node_info:
+                    nodes.append(node_info)
+                    if isinstance(node, (ast.ClassDef, ast.FunctionDef)):
+                        parent = self.find_parent(node)
+                        if parent:
+                            edges.append((parent, node_info[0]))
+
+            return nodes, edges, levels
+        except SyntaxError as e:
+            logger.error(f"Syntax error in code: {e}")
+            return [("SyntaxError", str(e))], [], {'module': [], 'class': [], 'function': []}
+
+    def process_node(self, node):
+        try:
+            if isinstance(node, ast.Module):
+                return (node.__class__.__name__, 'module')
+            elif isinstance(node, ast.ClassDef):
+                return (node.name, 'class')
+            elif isinstance(node, ast.FunctionDef):
+                return (node.name, 'function')
+            elif isinstance(node, ast.Name):
+                return (node.id, 'variable')
+            # Add more node types as needed
+            else:
+                return None
+        except Exception as e:
+            logger.error(f"Error processing node {type(node)}: {e}")
+            return None
+
+
+    def find_parent(self, node):
+        for potential_parent in ast.walk(self.tree):
+            for child in ast.iter_child_nodes(potential_parent):
+                if child == node:
+                    if isinstance(potential_parent, ast.ClassDef):
+                        return potential_parent.name
+                    elif isinstance(potential_parent, ast.Module):
+                        return potential_parent.__class__.__name__
+        return None
+
+class CodeNode(pg.GraphItem):
+    def __init__(self):
+        self.scatter = pg.ScatterPlotItem()
+        self.textItems = []
+        self.node_data = [[], [], []]  # Initialize node_data before calling super().__init__()
+        super().__init__()
+        self.setData([], [], [])
+
+    def setData(self, pos=None, text=None, color=None, **kwds):
+        logger.debug(f"Setting data for CodeNode: pos={pos}, text={text}, color={color}")
+        self.node_data = [
+            pos if pos is not None else self.node_data[0],
+            text if text is not None else self.node_data[1],
+            color if color is not None else self.node_data[2]
+        ]
+        self.updateGraph()
+
+    def updateGraph(self):
+        logger.debug("Updating CodeNode graph")
+        pos, text, color = self.node_data
+        try:
+            if len(pos) > 0:
+                self.scatter.setData(pos=pos, size=20, brush=color, hoverable=True, hoverSymbol='s', hoverSize=30)
+
+                # Update existing text items and create new ones if needed
+                for i, (p, t) in enumerate(zip(pos, text)):
+                    if i < len(self.textItems):
+                        self.textItems[i].setPos(p[0], p[1])
+                        self.textItems[i].setText(t)
+                        self.textItems[i].show()
+                    else:
+                        item = pg.TextItem(t)
+                        self.textItems.append(item)
+                        item.setParentItem(self)
+                        item.setPos(p[0], p[1])
+
+                # Hide excess text items
+                for item in self.textItems[len(pos):]:
+                    item.hide()
+
+                logger.debug(f"Updated graph with {len(pos)} nodes")
+            else:
+                logger.warning("No data to display in CodeNode")
+                self.scatter.clear()
+                for item in self.textItems:
+                    item.hide()
+        except Exception as e:
+            logger.error(f"Error updating CodeNode graph: {e}")
+            logger.error(traceback.format_exc())
+
+    def paint(self, p, *args):
+        self.scatter.paint(p, *args)
 
     def boundingRect(self):
-        return self.rect
+        return self.scatter.boundingRect()
 
-    def add_connection(self, other_node):
-        self.connections.append(other_node)
+
 
 class CodeVisualizer(pg.GraphicsLayoutWidget):
+    error = pyqtSignal(str)
+    status = pyqtSignal(str)
+
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.view = self.addViewBox()
         self.view.setAspectLocked(False)
         self.view.enableAutoRange()
-        self.nodes = {}
-        self.edges = []
+        self.graph = nx.Graph()
+        self.node_item = CodeNode()
+        self.view.addItem(self.node_item)
 
-    def add_node(self, name, node_type, content=""):
-        node = CodeNode(name, node_type, content)
-        self.nodes[name] = node
-        self.view.addItem(node)
-        return node
+        self.view.setMouseMode(self.view.RectMode)
+        self.view.enableAutoRange(False)
+        self.view.setLimits(xMin=-1000, xMax=1000, yMin=-1000, yMax=1000)
 
-    def add_edge(self, source, target):
-        edge = pg.GraphItem()
-        self.view.addItem(edge)
-        self.edges.append((source, target, edge))
+    def update_graph(self, nodes, edges, levels):
+        logger.debug(f"Updating graph with {len(nodes)} nodes and {len(edges)} edges")
+        try:
+            self.graph.clear()
+            for node, node_type in nodes:
+                self.graph.add_node(node, type=node_type)
+            self.graph.add_edges_from(edges)
+            self.levels = levels
+            self.update_layout()
+        except Exception as e:
+            logger.error(f"Error updating graph: {e}")
+            logger.error(traceback.format_exc())
+            self.error.emit(f"Error updating graph: {str(e)}")
+
 
     def update_layout(self):
-        pos = nx.spring_layout(nx.Graph([(s.name, t.name) for s, t, _ in self.edges]))
-        for name, node in self.nodes.items():
-            x, y = pos[name]
-            node.setPos(x * 1000, y * 1000)
+        logger.debug("Updating layout")
+        self.status.emit("Updating layout")
+        if len(self.graph.nodes) == 0:
+            logger.warning("No nodes to display")
+            self.node_item.setData([], [], [])
+            return
 
-        for source, target, edge in self.edges:
-            edge.setData(pos={
-                'x': [pos[source.name][0], pos[target.name][0]],
-                'y': [pos[source.name][1], pos[target.name][1]]
-            }, adj=np.array([[0, 1]]), pen=pg.mkPen('r', width=2))
+        try:
+            pos = nx.spring_layout(self.graph, k=2, iterations=50)
+            node_pos = []
+            node_colors = []
+            node_labels = []
+            for node, coords in pos.items():
+                node_pos.append(coords * 1000)  # Scale up the positions
+                node_type = self.graph.nodes[node]['type']
+                color = self.get_node_color(node_type)
+                node_colors.append(color)
+                node_labels.append(node)
+            logger.debug(f"Setting data for {len(node_pos)} nodes")
+            self.node_item.setData(pos=node_pos, text=node_labels, color=node_colors)
+            self.view.autoRange()  # Ensure all nodes are visible
+            self.status.emit(f"Visualization updated with {len(node_pos)} nodes")
+        except Exception as e:
+            logger.error(f"Error in update_layout: {e}")
+            logger.error(traceback.format_exc())
+            self.error.emit(f"Error updating layout: {str(e)}")
 
-class CodeParser:
-    def __init__(self, code):
-        self.code = code
-        self.tree = ast.parse(code)
 
-    def analyze(self):
-        nodes = []
-        edges = []
-        for node in ast.walk(self.tree):
-            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
-                nodes.append((node.name, type(node).__name__, ast.get_source_segment(self.code, node)))
-                for child in ast.iter_child_nodes(node):
-                    if isinstance(child, ast.Name):
-                        edges.append((node.name, child.id))
-        return nodes, edges
+    def get_node_color(self, node_type):
+        color_map = {
+            'module': (100, 100, 255, 255),
+            'class': (100, 255, 100, 255),
+            'function': (255, 100, 100, 255),
+            'variable': (255, 200, 0, 255)
+        }
+        return color_map.get(node_type, (200, 200, 200, 255))
 
-class DataFlowAnalyzer:
-    def __init__(self, code):
-        self.code = code
-        self.tree = ast.parse(code)
 
-    def analyze(self):
-        flow = []
-        for node in ast.walk(self.tree):
-            if isinstance(node, ast.Assign):
-                for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        flow.append((ast.get_source_segment(self.code, node.value), target.id))
-        return flow
+    def set_level(self, level):
+        logger.debug(f"Setting visualization level to: {level}")
+        if level in self.levels and self.levels[level]:
+            nodes_to_show = self.levels[level]
+            subgraph = self.graph.subgraph(nodes_to_show)
+            self.update_layout_for_subgraph(subgraph)
+        else:
+            logger.warning(f"Invalid or empty level: {level}")
+            self.error.emit(f"Invalid or empty level: {level}")
 
-class AIAssistant:
-    def suggest_improvements(self, code):
-        # This is a placeholder for more advanced AI-based code analysis
-        suggestions = []
-        if len(code.splitlines()) > 20:
-            suggestions.append("Consider breaking this code into smaller functions for better readability.")
-        if 'global' in code:
-            suggestions.append("Try to avoid using global variables to improve code maintainability.")
-        return suggestions
+    def update_layout_for_subgraph(self, subgraph):
+        logger.debug(f"Updating layout for subgraph with {len(subgraph.nodes)} nodes")
+        if len(subgraph.nodes) == 0:
+            logger.warning("Subgraph is empty")
+            self.node_item.setData([], [], [])
+            return
 
-class CollaborationServer:
-    def __init__(self):
-        self.clients = []
-        self.code = ""
-
-    def add_client(self, client):
-        self.clients.append(client)
-
-    def remove_client(self, client):
-        self.clients.remove(client)
-
-    def update_code(self, new_code, sender):
-        self.code = new_code
-        for client in self.clients:
-            if client != sender:
-                client.receive_update(new_code)
+        try:
+            pos = nx.spring_layout(subgraph, k=2, iterations=50)
+            node_pos = []
+            node_colors = []
+            node_labels = []
+            for node, coords in pos.items():
+                node_pos.append(coords * 1000)
+                node_type = subgraph.nodes[node]['type']
+                color = self.get_node_color(node_type)
+                node_colors.append(color)
+                node_labels.append(node)
+            self.node_item.setData(pos=node_pos, text=node_labels, color=node_colors)
+            self.view.autoRange()  # Ensure all nodes are visible
+            self.status.emit(f"Subgraph visualization updated with {len(node_pos)} nodes")
+        except Exception as e:
+            logger.error(f"Error in update_layout_for_subgraph: {e}")
+            logger.error(traceback.format_exc())
+            self.error.emit(f"Error updating subgraph layout: {str(e)}")
 
 class CodeVisualizationTool(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.code_parser = None
-        self.data_flow_analyzer = None
-        self.ai_assistant = AIAssistant()
-        self.collaboration_server = CollaborationServer()
-        self.collaboration_server.add_client(self)
 
     def initUI(self):
-        self.setWindowTitle('Advanced Python Code Visualization Tool')
+        self.setWindowTitle('CodeScope: Advanced Python Code Visualization Tool')
         self.setGeometry(100, 100, 1600, 900)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
 
+
         self.visualizer = CodeVisualizer(self)
+        self.visualizer.error.connect(self.show_error)
         self.code_editor = QTextEdit(self)
         self.code_editor.textChanged.connect(self.on_code_changed)
 
-        splitter = QSplitter(Qt.Horizontal)
+        self.error_label = QLabel(self)
+        self.error_label.setStyleSheet("color: red;")
+
+        self.log_viewer = QPlainTextEdit(self)
+        self.log_viewer.setReadOnly(True)
+
+        self.search_bar = QLineEdit(self)
+        self.search_bar.setPlaceholderText("Search for nodes...")
+        self.search_bar.textChanged.connect(self.search_nodes)
+
+        self.level_selector = QLineEdit(self)
+        self.level_selector.setPlaceholderText("Enter level (module/class/function)")
+        self.level_selector.returnPressed.connect(self.change_level)
+
+        right_widget = QWidget()
+        right_layout = QVBoxLayout(right_widget)
+        right_layout.addWidget(self.search_bar)
+        right_layout.addWidget(self.level_selector)
+        right_layout.addWidget(self.code_editor)
+        right_layout.addWidget(self.error_label)
+        right_layout.addWidget(self.log_viewer)
+
+        splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.addWidget(self.visualizer)
-        splitter.addWidget(self.code_editor)
-        splitter.setSizes([2, 1])  # Set initial sizes (2:1 ratio)
+        splitter.addWidget(right_widget)
+        splitter.setSizes([2, 1])
 
         layout.addWidget(splitter)
 
+        self.parser_thread = QThread()
+        self.parser_worker = None
+
     def load_code(self, code):
         self.code_editor.setText(code)
-        self.code_parser = CodeParser(code)
-        self.data_flow_analyzer = DataFlowAnalyzer(code)
-        self.update_visualization()
+        self.update_visualization(code)
 
-    def update_visualization(self):
-        self.visualizer.view.clear()
-        self.visualizer.nodes.clear()
-        self.visualizer.edges.clear()
+    def update_visualization(self, code):
+        if self.parser_thread.isRunning():
+            self.parser_thread.quit()
+            self.parser_thread.wait()
 
-        nodes, edges = self.code_parser.analyze()
-        data_flow = self.data_flow_analyzer.analyze()
+        self.parser_worker = CodeParserWorker(code)
+        self.parser_worker.moveToThread(self.parser_thread)
+        self.parser_thread.started.connect(self.parser_worker.run)
+        self.parser_worker.finished.connect(self.on_parsing_finished)
+        self.parser_worker.error.connect(self.show_error)
+        self.parser_worker.log.connect(self.show_log)
+        self.parser_worker.finished.connect(self.parser_thread.quit)
+        self.parser_worker.finished.connect(self.parser_worker.deleteLater)
+        self.parser_thread.finished.connect(self.parser_thread.deleteLater)
+        self.parser_thread.start()
 
-        for name, node_type, content in nodes:
-            self.visualizer.add_node(name, node_type, content)
+    @pyqtSlot(object, object, object)
+    def on_parsing_finished(self, nodes, edges, levels):
+        try:
+            logger.debug("Parsing finished, updating visualization")
+            self.visualizer.update_graph(nodes, edges, levels)
+            self.error_label.setText("")
+        except Exception as e:
+            logger.error(f"Error updating visualization: {e}")
+            logger.error(traceback.format_exc())
+            self.show_error(f"Error updating visualization: {str(e)}")
 
-        for source, target in edges:
-            if source in self.visualizer.nodes and target in self.visualizer.nodes:
-                self.visualizer.add_edge(self.visualizer.nodes[source], self.visualizer.nodes[target])
 
-        for source, target in data_flow:
-            if source in self.visualizer.nodes and target in self.visualizer.nodes:
-                self.visualizer.add_edge(self.visualizer.nodes[source], self.visualizer.nodes[target])
+    @pyqtSlot(str)
+    def show_error(self, error_message):
+        self.error_label.setText(error_message)
+        logger.error(error_message)
 
-        self.visualizer.update_layout()
+    @pyqtSlot(str)
+    def show_log(self, log_message):
+        self.log_viewer.appendPlainText(log_message)
+        logger.debug(log_message)
 
     def on_code_changed(self):
         code = self.code_editor.toPlainText()
-        self.collaboration_server.update_code(code, self)
-        self.load_code(code)
-        suggestions = self.ai_assistant.suggest_improvements(code)
-        if suggestions:
-            print("AI Suggestions:")
-            for suggestion in suggestions:
-                print(f"- {suggestion}")
+        self.update_visualization(code)
 
-    def receive_update(self, new_code):
-        if new_code != self.code_editor.toPlainText():
-            cursor = self.code_editor.textCursor()
-            self.code_editor.setText(new_code)
-            self.code_editor.setTextCursor(cursor)
+    def search_nodes(self, query):
+        # TODO: Implement node search functionality
+        pass
+
+    def change_level(self):
+        level = self.level_selector.text().lower()
+        self.visualizer.set_level(level)
+
+    def closeEvent(self, event):
+        logger.debug("Closing application")
+        if hasattr(self, 'parser_thread') and self.parser_thread.isRunning():
+            logger.debug("Stopping parser thread")
+            self.parser_thread.quit()
+            self.parser_thread.wait()
+        super().closeEvent(event)
 
 def main():
     app = QApplication(sys.argv)
     ex = CodeVisualizationTool()
     ex.show()
 
-    # Load sample code
     sample_code = """
 def greet(name):
     print(f"Hello, {name}!")
@@ -224,7 +391,50 @@ person.introduce()
 """
     ex.load_code(sample_code)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.critical(f"An unexpected error occurred: {e}")
+        logger.critical(traceback.format_exc())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

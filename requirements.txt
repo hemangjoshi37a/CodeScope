@@ -1,0 +1,13 @@
+# CodeScope Dependencies
+# Python Code Visualization Tool
+
+# GUI Framework
+PyQt6>=6.0.0
+
+# Graph visualization and plotting
+pyqtgraph>=0.12.0
+
+# Network graph algorithms
+networkx>=2.5
+
+# Note: ast module is built-in to Python 3.7+

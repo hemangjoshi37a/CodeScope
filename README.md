@@ -1,22 +1,21 @@
-# CodeScope : Python Code Visualization Tool: Revolutionize Your Code Understanding
+# CodeScope: Python Code Visualization Tool
 
 ![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Elevate your Python development experience with our cutting-edge Code Visualization Tool. Transform complex codebases into intuitive, interactive visual representations for faster comprehension and more efficient collaboration.
+Transform complex Python codebases into intuitive, interactive visual representations for faster comprehension and more efficient development.
 
 ## 🚀 Key Features
 
-- **Dynamic Graph Visualization**: Powered by PyQt5 and pyqtgraph for smooth, responsive displays
+- **Dynamic Graph Visualization**: Powered by PyQt6 and pyqtgraph for smooth, responsive displays
 - **Intelligent Code Parsing**: Utilizes Abstract Syntax Tree (AST) for accurate code analysis
-- **Multi-level Visualization**: Seamlessly navigate between module, class, and function views
+- **Multi-level Visualization**: Navigate between module, class, and function views
 - **Interactive Code Editing**: Real-time code modifications with instant visual updates
-- **Advanced Data Flow Analysis**: Gain insights into variable usage and function interactions
-- **Zoom and Pan Capabilities**: Easily explore large, complex codebases
-- **Search Functionality**: Quickly locate specific code elements within your project
-- **AI-Assisted Code Understanding**: Get improvement suggestions and code summaries
-- **Basic Collaboration Features**: Synchronize code changes across multiple users
+- **Node-Based Representation**: Color-coded nodes for classes, functions, and variables
+- **Zoom and Pan Capabilities**: Explore large, complex codebases with ease
+- **Search Functionality**: Quickly locate specific code elements (search bar included)
+- **Asynchronous Parsing**: Non-blocking code analysis using Qt threading
 
 ## 🛠️ Installation
 
@@ -26,6 +25,22 @@ cd CodeScope
 pip install -r requirements.txt
 ```
 
+### Dependencies
+
+- Python 3.7+
+- PyQt6
+- pyqtgraph
+- networkx
+- ast (built-in)
+
+### Install Dependencies Manually
+
+If `requirements.txt` is not available, install dependencies manually:
+
+```bash
+pip install PyQt6 pyqtgraph networkx
+```
+
 ## 🖥️ Getting Started
 
 1. Launch the application:
@@ -33,158 +48,165 @@ pip install -r requirements.txt
    python app.py
    ```
 
-2. The application will open with a sample code loaded. You can start exploring the visualization immediately.
+2. The application opens with a sample code snippet demonstrating:
+   - Function definitions
+   - Class definitions with methods
+   - Variable assignments and usage
 
-3. To load your own Python file or project:
-   - Use File > Open in the application menu
-   - Or drag and drop a Python file into the application window
+3. Start exploring the visualization immediately or paste your own Python code in the editor.
 
 ## 📊 Usage
 
 ### Basic Navigation
 
-- **Zoom**: Use the mouse wheel or trackpad gestures
-- **Pan**: Click and drag on the visualization area
-- **Select Nodes**: Click on a node to see details
-- **Edit Code**: Use the integrated code editor on the right side
+- **Zoom**: Use the mouse wheel or trackpad gestures on the visualization
+- **Pan**: Right-click and drag on the visualization area (rect mode enabled)
+- **View Limits**: Visualization is bounded to prevent excessive panning
+- **Auto-Range**: Automatic adjustment to fit all nodes in view
 
-### Visualization Features
+### Visual Elements
 
-- **Node Types**: 
-  - Blue rectangles represent classes
-  - Pink circles represent methods
-  - Green circles represent variables
+- **Node Colors**:
+  - **Blue** (100, 100, 255): Modules
+  - **Green** (100, 255, 100): Classes
+  - **Red** (255, 100, 100): Functions
+  - **Yellow-Orange** (255, 200, 0): Variables
 
-- **Connections**: 
-  - Solid lines show function calls or class relationships
-  - Dashed lines represent data flow
+- **Node Connections**:
+  - Lines show relationships between classes, functions, and their containing scopes
 
 ### Real-time Editing
 
-1. Make changes in the code editor
-2. The visualization updates automatically
-3. AI suggestions appear below the code editor
+1. Type or paste Python code in the right-side editor
+2. Visualization updates automatically on each text change
+3. Parse errors are displayed in the red error label below the editor
+4. Detailed logs appear in the log viewer at the bottom
 
-### Collaboration
+### Level Filtering
 
-1. Multiple instances of the application can connect to the same codebase
-2. Changes made by one user are reflected in real-time for others
+1. Enter a level type in the level selector: `module`, `class`, or `function`
+2. Press Enter to filter the visualization to show only nodes of that type
+3. Clear the field and press Enter to show all nodes again
+
+### Search Feature
+
+- Search bar is available (implementation placeholder in app.py:356)
+- Future enhancement will allow searching and highlighting specific nodes
 
 ## 🧰 Technologies Used
 
-- Python 3.7+
-- PyQt5
-- pyqtgraph
-- networkx
-- AST (Abstract Syntax Tree)
+- **Python 3.7+**: Core language
+- **PyQt6**: Modern Qt bindings for GUI framework
+- **pyqtgraph**: High-performance graphics and GUI library for scientific applications
+- **networkx**: Graph algorithms and network analysis
+- **ast**: Python's built-in Abstract Syntax Tree module
 
 ## 🔍 Features in Detail
 
 ### Abstract Syntax Tree (AST) Parsing
 
-Our tool uses Python's `ast` module to parse your code into an Abstract Syntax Tree. This allows for detailed analysis of code structure, including:
+CodeScope uses Python's `ast` module to parse code into an Abstract Syntax Tree, enabling detailed structural analysis:
 
-- Function and class definitions
-- Variable assignments and usage
-- Control flow structures
+- **Module detection**: Top-level code organization
+- **Class definitions** (ast.ClassDef): Class structures and inheritance
+- **Function definitions** (ast.FunctionDef): Methods and standalone functions
+- **Variable assignments** (ast.Name): Variable references and usage
+- **Syntax error handling**: Graceful failure with error messages
 
-### Data Flow Analysis
+The parser is implemented in `CodeParser` class (app.py:36-90) and runs asynchronously to prevent UI blocking.
 
-The Data Flow Analyzer tracks how variables are used throughout your code:
+### Asynchronous Code Analysis
 
-- Identifies variable assignments and references
-- Visualizes data movement between functions and classes
-- Helps identify potential issues like unused variables or unintended side effects
+- **CodeParserWorker** (app.py:18-34): Qt QObject worker running in separate thread
+- **Signals**: `finished`, `error`, and `log` signals for communication with UI
+- **Thread Management**: Proper cleanup on application close (app.py:363-369)
 
-### AI-Assisted Code Understanding
+### Graph Visualization
 
-Our basic AI assistant provides:
+- **Spring Layout Algorithm**: Uses networkx spring_layout for natural node positioning
+- **Configurable Parameters**: k=2 (optimal spring distance), iterations=50 (layout convergence)
+- **Position Scaling**: Coordinates multiplied by 1000 for better visibility
+- **Custom GraphItem**: CodeNode class (app.py:92-146) extends pyqtgraph.GraphItem
 
-- Suggestions for code improvements
-- Identification of potential code smells
-- Simple refactoring recommendations
+### Interactive UI Components
 
-To use: Simply edit your code, and AI suggestions will appear automatically.
+- **Code Editor** (QTextEdit): Multi-line text editor with syntax support
+- **Visualizer** (CodeVisualizer): Custom pyqtgraph widget
+- **Error Label** (QLabel): Red-styled error display
+- **Log Viewer** (QPlainTextEdit): Read-only scrolling log output
+- **Search Bar** (QLineEdit): Node search input (ready for implementation)
+- **Level Selector** (QLineEdit): Filter by node type
+- **Splitter Layout**: Resizable 2:1 ratio between visualizer and controls
 
 ## 🛠️ Troubleshooting
 
-- **Visualization not updating**: Try closing and reopening the file
-- **Performance issues with large files**: Consider breaking your code into smaller modules
-- **Collaboration features not working**: Ensure all users are on the same network and using the same version of the tool
-
-
-
-
+- **Visualization not updating**: Check the log viewer for parsing errors
+- **Syntax errors**: Ensure your Python code is syntactically correct
+- **Performance issues with large files**:
+  - Consider limiting the code to specific modules or functions
+  - The spring layout algorithm may take time with 100+ nodes
+- **Blank visualization**: Verify that your code contains classes, functions, or assignments
+- **Thread warnings on close**: Normal cleanup messages; threads are properly terminated
 
 ## 🗺️ Roadmap
 
-Our vision is to create a revolutionary Python code visualization tool that transforms the way developers understand and interact with codebases. Here's our roadmap to achieving this vision:
+### Phase 1: Enhanced Visualization Framework ✅ (Partially Complete)
+- [x] Node-based visualization system
+- [x] Custom rendering with pyqtgraph
+- [x] Zoomable interface with pan support
+- [ ] Google Maps-like multi-level detail system
 
-### Phase 1: Enhanced Visualization Framework
-- [ ] Implement a node-based visualization system inspired by Blender's node editor
-- [ ] Develop a custom rendering engine for smooth, high-performance graph display
-- [ ] Create a zoomable interface with Google Maps-like functionality for exploring code at different levels of detail
+### Phase 2: Advanced Code Analysis (In Progress)
+- [x] Basic AST parsing for classes, functions, variables
+- [ ] Enhanced data flow analysis tracking variable propagation
+- [ ] Call graph analysis for function dependencies
+- [ ] Import and module dependency visualization
 
-### Phase 2: Advanced Code Analysis
-- [ ] Enhance AST parsing to extract more detailed information about code structure and relationships
-- [ ] Implement data flow analysis to track variable usage and value propagation across the codebase
-- [ ] Develop algorithms to identify and visualize code patterns and potential optimizations
-
-### Phase 3: Interactive Node-Based Code Representation
-- [ ] Design and implement visual representations for different code elements (functions, classes, variables) as interactive nodes
-- [ ] Create a system for visually connecting nodes to represent data flow and function calls
-- [ ] Implement drag-and-drop functionality for rearranging and connecting nodes
+### Phase 3: Interactive Node Manipulation
+- [x] Visual node representation with colors
+- [x] Automatic connection generation
+- [ ] Drag-and-drop node rearrangement
+- [ ] Manual edge creation and editing
+- [ ] Node grouping and clustering
 
 ### Phase 4: Multi-Level Detail Visualization
-- [ ] Develop a system for displaying different levels of code detail based on zoom level
-- [ ] Implement smooth transitions between detail levels during zooming
-- [ ] Create summarization algorithms to generate high-level overviews of code sections
+- [x] Basic level filtering (module/class/function)
+- [ ] Smooth zoom-based detail transitions
+- [ ] Hierarchical code summarization
+- [ ] Collapsible node groups
 
-### Phase 5: Real-Time Code Editing and Visualization Updates
-- [ ] Integrate a code editor that allows real-time modifications to the visualized code
-- [ ] Implement instant visual updates to reflect code changes in the node-based representation
-- [ ] Develop a system for visualizing the impact of code changes on the overall structure and data flow
+### Phase 5: Real-Time Code Editing ✅
+- [x] Integrated code editor
+- [x] Instant visual updates on code change
+- [x] Error handling and display
+- [ ] Bidirectional editing (click node to edit definition)
 
-### Phase 6: Collaborative Features
-- [ ] Implement multi-user support for simultaneous visualization and editing
-- [ ] Develop a system for leaving comments and annotations on specific nodes or connections
-- [ ] Create visualization overlays for showing code ownership, recent changes, and areas of high activity
+### Phase 6: Search and Navigation
+- [ ] Implement search functionality (placeholder exists)
+- [ ] Node highlighting on search
+- [ ] Jump to definition in code editor
+- [ ] Breadcrumb navigation
 
-### Phase 7: AI-Assisted Code Understanding
-- [ ] Integrate machine learning models to suggest code improvements and optimizations
-- [ ] Develop AI-powered code summarization for quick understanding of complex sections
-- [ ] Implement predictive visualization of potential code paths and data flow based on AI analysis
+### Phase 7: Advanced Features
+- [ ] Export visualizations as images
+- [ ] Save/load custom layouts
+- [ ] Multiple file support
+- [ ] Project-wide visualization
 
-### Phase 8: Version Control Integration
-- [ ] Develop visualizations for code evolution over time, integrated with Git or other version control systems
-- [ ] Implement visual diff tools for comparing different versions of the code structure
-- [ ] Create animations to show how code structure and data flow have changed between commits
+### Phase 8: Collaboration Features (Future)
+- [ ] Multi-user support
+- [ ] Comments and annotations
+- [ ] Change tracking visualization
 
-### Phase 9: Performance Optimization for Large Codebases
-- [ ] Implement progressive loading and rendering for handling extremely large projects
-- [ ] Develop intelligent caching mechanisms for faster navigation of previously viewed code sections
-- [ ] Optimize memory usage for sustained performance with complex visualizations
+### Phase 9: AI-Assisted Analysis (Future)
+- [ ] Code improvement suggestions
+- [ ] Automated refactoring recommendations
+- [ ] Pattern recognition
 
-### Phase 10: Extensibility and Ecosystem
-- [ ] Design and implement a plugin system for custom visualizations and analyses
-- [ ] Develop API for integration with IDEs and other development tools
-- [ ] Create a marketplace for sharing custom visualization templates and analysis modules
-
-This roadmap represents our commitment to revolutionizing code understanding and manipulation. By following this path, we aim to create a tool that not only visualizes code but transforms the entire software development workflow, making it more intuitive, efficient, and collaborative.
-
-We invite the community to join us on this exciting journey. Your feedback, contributions, and ideas will be crucial in shaping the future of code visualization and comprehension.
-
-
-
-
-
-
-
-
-
-
-
-
+### Phase 10: Version Control Integration (Future)
+- [ ] Git integration
+- [ ] Visual diff tools
+- [ ] Change history animation
 
 ## 🤝 Contributing
 
@@ -197,7 +219,13 @@ We welcome contributions to CodeScope! Here's how you can help:
 5. Push to the branch (`git push origin feature/AmazingFeature`)
 6. Open a Pull Request
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+### Development Guidelines
+
+- Follow PEP 8 style guidelines
+- Add docstrings to new functions and classes
+- Test with various Python code samples
+- Check the log output for errors
+- Update README for significant changes
 
 ## 📄 License
 
@@ -206,9 +234,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🌟 Support the Project
 
 If you find CodeScope useful, please consider:
-- Starring the repository
-- Sharing it with your network
-- Contributing to its development
+- Starring the repository ⭐
+- Sharing it with your network 📢
+- Contributing to its development 💻
+- Reporting bugs and suggesting features 🐛
 
 ## 📫 Contact the Developer
 
@@ -228,32 +257,67 @@ If you find CodeScope useful, please consider:
 
 ## ❓ Frequently Asked Questions
 
-1. **Q: Can CodeScope handle very large Python projects?**
-   A: While CodeScope can visualize large projects, performance may be affected. We recommend starting with individual files or smaller modules and gradually exploring larger codebases.
+**Q: Can CodeScope handle very large Python projects?**
+A: CodeScope works best with individual files or modules. For large projects, visualize key modules separately. Performance depends on node count and complexity.
 
-2. **Q: Is my code secure when using the collaboration features?**
-   A: CodeScope does not store or transmit your code to external servers. Collaboration happens directly between instances on the same network. However, always be cautious when sharing sensitive code.
+**Q: Why does the visualization look cluttered?**
+A: Try using the level selector to filter by `class` or `function`. The spring layout algorithm works best with 10-50 nodes.
 
-3. **Q: How accurate is the AI-assisted code understanding?**
-   A: The current AI assistant provides basic suggestions. While helpful, it's not a substitute for human code review. We're continuously working to improve its accuracy and capabilities.
+**Q: Can I export the visualization?**
+A: Export functionality is planned for future releases. Currently, you can take screenshots of the visualization window.
 
-4. **Q: Can I use CodeScope with languages other than Python?**
-   A: Currently, CodeScope is designed specifically for Python. Support for other languages is on our roadmap for future development.
+**Q: Does CodeScope modify my code?**
+A: No, CodeScope only reads and analyzes your code. Changes in the editor don't save to disk automatically.
 
-5. **Q: How often is CodeScope updated?**
-   A: We strive for regular updates to improve features and fix bugs. Check our GitHub repository for the latest releases and updates.
+**Q: What Python syntax is supported?**
+A: CodeScope supports standard Python syntax parsed by the `ast` module (Python 3.7+). Complex expressions and decorators are recognized but may not be visualized in detail.
 
-## 💡 Elevate Your Python Development
+**Q: Can I use CodeScope with other languages?**
+A: Currently, CodeScope is Python-only. The AST parser is Python-specific, but the visualization framework could be adapted for other languages.
 
-Transform the way you understand and interact with Python code. CodeScope is perfect for:
+**Q: How do I report bugs?**
+A: Open an issue on GitHub with:
+  - Steps to reproduce
+  - Error messages from the log viewer
+  - Sample code causing the issue (if possible)
 
-- **Code Reviews**: Quickly grasp complex structures and relationships
-- **Refactoring**: Identify areas for improvement with ease
-- **Onboarding**: Help new team members understand your codebase faster
-- **Education**: Teach Python concepts with interactive visual aids
-- **Debugging**: Trace issues through visual representation of code flow
+## 💡 Use Cases
 
-Don't let complex codebases slow you down. Visualize, understand, and conquer your Python projects with CodeScope.
+CodeScope is perfect for:
+
+- **Code Reviews**: Quickly understand structure and relationships
+- **Refactoring**: Identify tightly coupled components
+- **Learning**: Visualize how classes and functions interact
+- **Documentation**: Generate visual code maps
+- **Debugging**: Trace function calls and data flow
+- **Onboarding**: Help new developers understand codebase structure
+
+## 🔬 Technical Details
+
+### Code Structure
+
+```
+CodeScope/
+├── app.py                  # Main application file
+├── CodeScope.ipynb        # Jupyter notebook experiments
+├── minimal_example.py     # Simplified example
+├── LICENSE                # MIT License
+└── README.md             # This file
+```
+
+### Key Classes
+
+- **CodeVisualizationTool** (app.py:258-369): Main QMainWindow application
+- **CodeVisualizer** (app.py:150-256): Custom pyqtgraph widget for graph rendering
+- **CodeParser** (app.py:36-90): AST-based code analyzer
+- **CodeParserWorker** (app.py:18-34): Threaded parser wrapper
+- **CodeNode** (app.py:92-146): Custom GraphItem for node rendering
+
+### Logging
+
+CodeScope uses Python's logging module with DEBUG level:
+- Logger output appears in console and the in-app log viewer
+- Useful for debugging visualization issues and parser errors
 
 ---
 
